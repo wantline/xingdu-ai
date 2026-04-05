@@ -7,30 +7,35 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #f5f5f5; min-height: 100vh; }
-        .container { max-width: 393px; margin: 0 auto; background: #fff; min-height: 100vh; }
-        .header { height: 44px; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #f0f0f0; }
+        .container { max-width: 393px; margin: 0 auto; background: #fff; min-height: 100vh; padding-bottom: 60px; }
+        .header { height: 44px; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; z-index: 100; }
         .header-title { font-size: 17px; font-weight: 600; color: #000; }
         .header-share { font-size: 14px; color: #000; opacity: 0.8; }
         .chat-container { padding: 16px; min-height: calc(100vh - 180px); }
         .message { display: flex; margin-bottom: 16px; align-items: flex-start; gap: 12px; }
         .message.ai { flex-direction: row; }
+        .message.user { flex-direction: row-reverse; }
         .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
         .message-bubble { max-width: 70%; padding: 12px 16px; border-radius: 16px; font-size: 15px; line-height: 1.5; }
         .message.ai .message-bubble { background: #f5f5f5; color: #000; border-bottom-left-radius: 4px; }
         .message.user .message-bubble { background: #07c160; color: #fff; border-bottom-right-radius: 4px; }
-        .chips-wrapper { position: fixed; bottom: 76px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 393px; background: #fff; border-top: 1px solid #f0f0f0; padding: 12px 16px; }
+        .chips-wrapper { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 393px; background: #fff; border-top: 1px solid #f0f0f0; padding: 12px 16px; z-index: 99; }
         .chips-container { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .chips-container::-webkit-scrollbar { display: none; }
         .chip { padding: 8px 16px; background: #f5f5f5; color: #000; border-radius: 18px; font-size: 14px; white-space: nowrap; cursor: pointer; border: 1px solid #e5e5e5; transition: all 0.2s; }
         .chip:active { background: #e5e5e5; transform: scale(0.98); }
-        .input-area { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 393px; background: #fff; border-top: 1px solid #f0f0f0; padding: 12px 16px; display: flex; align-items: center; gap: 12px; height: 76px; }
+        .input-area { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 393px; background: #fff; border-top: 1px solid #f0f0f0; padding: 12px 16px; display: flex; align-items: center; gap: 12px; height: 60px; }
         .input-field { flex: 1; height: 40px; border: 1px solid #e5e5e5; background: #f5f5f5; border-radius: 20px; padding: 0 16px; font-size: 15px; outline: none; }
         .input-field::placeholder { color: #999; }
         .send-btn { height: 40px; background: #07c160; color: #fff; border: none; border-radius: 20px; padding: 0 20px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
         .send-btn:active { opacity: 0.8; transform: scale(0.98); }
-        .role-switcher { position: fixed; top: 10px; right: 10px; z-index: 1000; background: rgba(0,0,0,0.6); color: #fff; padding: 6px 12px; border-radius: 16px; font-size: 12px; cursor: pointer; border: none; }
         .page { display: none; }
         .page.active { display: block; }
+        .tabbar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #fff; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-around; align-items: center; max-width: 393px; margin: 0 auto; z-index: 100; }
+        .tab-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 8px 16px; transition: all 0.2s; }
+        .tab-item.active { color: #07c160; }
+        .tab-icon { font-size: 24px; }
+        .tab-label { font-size: 11px; }
         .merchant-header { height: 44px; background: #0052d9; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
         .merchant-title { font-size: 17px; font-weight: 600; color: #fff; }
         .stats-grid { padding: 16px; background: #f5f5f5; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -48,62 +53,218 @@
         .btn { flex: 1; padding: 10px; border-radius: 8px; font-size: 14px; cursor: pointer; border: none; }
         .btn-default { background: #f5f5f5; color: #000; }
         .btn-primary { background: #07c160; color: #fff; }
+        .profile-header { padding: 24px 16px; background: #fff; display: flex; align-items: center; gap: 16px; }
+        .profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+        .profile-info { flex: 1; }
+        .profile-name { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+        .profile-phone { font-size: 14px; color: #999; }
+        .menu-list { background: #fff; margin-top: 12px; }
+        .menu-item { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-left { display: flex; align-items: center; gap: 12px; }
+        .menu-icon { font-size: 20px; }
+        .menu-text { font-size: 15px; }
+        .menu-arrow { color: #ccc; }
+        .vip-card { margin: 16px; padding: 20px; background: linear-gradient(135deg, #ffd700, #d4af37); border-radius: 16px; color: #fff; }
+        .vip-balance { font-size: 32px; font-weight: bold; margin: 8px 0; }
+        .vip-level { font-size: 12px; opacity: 0.9; }
+        .role-switcher { position: fixed; top: 10px; right: 10px; z-index: 1000; background: rgba(0,0,0,0.6); color: #fff; padding: 6px 12px; border-radius: 16px; font-size: 12px; cursor: pointer; border: none; }
     </style>
 </head>
 <body>
-    <button class="role-switcher" onclick="toggleRole()">🔄 切换</button>
+    <!-- 用户端 -->
+    <div id="user-pages">
+        <!-- AI 对话页 -->
+        <div id="page-chat" class="page active container">
+            <div class="header">
+                <div class="header-title">星嘟 AI 预约</div>
+                <div class="header-share">分享</div>
+            </div>
+            <div class="chat-container" id="chatContainer">
+                <div class="message ai">
+                    <div class="avatar">🤖</div>
+                    <div class="message-bubble">您好，这里是星嘟 AI 预约餐厅！😊</div>
+                </div>
+            </div>
+            <div class="chips-wrapper">
+                <div class="chips-container">
+                    <button class="chip" onclick="sendChip('预约')">预约</button>
+                    <button class="chip" onclick="sendChip('菜单')">菜单</button>
+                    <button class="chip" onclick="sendChip('查询订单')">查询订单</button>
+                </div>
+            </div>
+            <div class="input-area">
+                <input type="text" class="input-field" id="messageInput" placeholder="输入消息..." oninput="updateSendBtn()">
+                <button class="send-btn" onclick="sendMessage()">发送</button>
+            </div>
+        </div>
 
-    <!-- 用户端 - AI 对话页 -->
-    <div id="page-chat" class="page active container">
-        <div class="header">
-            <div class="header-title">星嘟 AI 预约</div>
-            <div class="header-share">分享</div>
-        </div>
-        <div class="chat-container" id="chatContainer">
-            <div class="message ai">
-                <div class="avatar">🤖</div>
-                <div class="message-bubble">您好，这里是星嘟 AI 预约餐厅！😊</div>
+        <!-- 订单页 -->
+        <div id="page-orders" class="page container">
+            <div class="header">
+                <div class="header-title">我的订单</div>
+                <div></div>
+            </div>
+            <div class="section">
+                <div class="order-card">
+                    <div class="order-row">
+                        <div class="order-name">星嘟餐厅</div>
+                        <div class="order-status">待确认</div>
+                    </div>
+                    <div class="order-info">📅 2024-04-06 18:30（晚餐）</div>
+                    <div class="order-info">👥 4 人 · 🍽️ 套餐 B x1</div>
+                    <div class="order-info">💰 已付定金 ¥50.00</div>
+                    <div class="order-actions">
+                        <button class="btn btn-default">取消预约</button>
+                        <button class="btn btn-primary">联系商家</button>
+                    </div>
+                </div>
+                <div class="order-card">
+                    <div class="order-row">
+                        <div class="order-name">星嘟餐厅</div>
+                        <div class="order-status" style="background: #e0f2ec; color: #07c160;">已确认</div>
+                    </div>
+                    <div class="order-info">📅 2024-04-05 12:00（中餐）</div>
+                    <div class="order-info">👥 2 人 · 🍽️ 套餐 A x1</div>
+                    <div class="order-info">💰 已付定金 ¥30.00</div>
+                </div>
             </div>
         </div>
-        <div class="chips-wrapper">
-            <div class="chips-container">
-                <button class="chip" onclick="sendChip('预约')">预约</button>
-                <button class="chip" onclick="sendChip('菜单')">菜单</button>
-                <button class="chip" onclick="sendChip('查询订单')">查询订单</button>
+
+        <!-- 个人中心页 -->
+        <div id="page-profile" class="page container">
+            <div class="header">
+                <div class="header-title">个人中心</div>
+                <div></div>
+            </div>
+            <div class="profile-header">
+                <div class="profile-avatar">👤</div>
+                <div class="profile-info">
+                    <div class="profile-name">Wang</div>
+                    <div class="profile-phone">📱 138****1234</div>
+                </div>
+                <div style="font-size: 20px;">✏️</div>
+            </div>
+            <div class="menu-list">
+                <div class="menu-item" onclick="switchPage('page-vip')">
+                    <div class="menu-left"><span class="menu-icon">🏆</span><span class="menu-text">VIP 会员中心</span></div>
+                    <span class="menu-arrow">></span>
+                </div>
+                <div class="menu-item" onclick="switchPage('page-orders')">
+                    <div class="menu-left"><span class="menu-icon">📋</span><span class="menu-text">我的订单</span></div>
+                    <span class="menu-arrow">></span>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-left"><span class="menu-icon">🍽️</span><span class="menu-text">我的收藏</span></div>
+                    <span class="menu-arrow">></span>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-left"><span class="menu-icon">⚙️</span><span class="menu-text">设置</span></div>
+                    <span class="menu-arrow">></span>
+                </div>
             </div>
         </div>
-        <div class="input-area">
-            <input type="text" class="input-field" id="messageInput" placeholder="输入消息..." oninput="updateSendBtn()">
-            <button class="send-btn" onclick="sendMessage()">发送</button>
+
+        <!-- VIP 中心页 -->
+        <div id="page-vip" class="page container">
+            <div class="header">
+                <div class="header-title">VIP 会员中心</div>
+                <div class="header-share" onclick="switchPage('page-profile')">返回</div>
+            </div>
+            <div class="vip-card">
+                <div>当前余额</div>
+                <div class="vip-balance">¥1,280.00</div>
+                <div class="vip-level">🏆 VIP 会员</div>
+            </div>
+            <div class="section">
+                <div class="section-title">推荐充值档位</div>
+                <div class="order-card">
+                    <div class="order-row">
+                        <div>
+                            <div class="order-name">¥100</div>
+                            <div class="order-info" style="color: #ed7b2f;">送¥10</div>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100px;" onclick="alert('发起支付 ¥100')">立即充值</button>
+                    </div>
+                </div>
+                <div class="order-card">
+                    <div class="order-row">
+                        <div>
+                            <div class="order-name">¥500</div>
+                            <div class="order-info" style="color: #ed7b2f;">送¥60</div>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100px;" onclick="alert('发起支付 ¥500')">立即充值</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="tabbar" id="user-tabbar">
+            <div class="tab-item active" onclick="switchPage('page-chat')">
+                <div class="tab-icon">💬</div>
+                <div class="tab-label">预约</div>
+            </div>
+            <div class="tab-item" onclick="switchPage('page-orders')">
+                <div class="tab-icon">📋</div>
+                <div class="tab-label">订单</div>
+            </div>
+            <div class="tab-item" onclick="switchPage('page-profile')">
+                <div class="tab-icon">👤</div>
+                <div class="tab-label">我的</div>
+            </div>
         </div>
     </div>
 
-    <!-- 商家端 - Dashboard -->
-    <div id="page-merchant" class="page container">
-        <div class="merchant-header">
-            <div class="merchant-title">商家管理</div>
-            <div style="color: #fff; font-size: 14px;" onclick="switchPage('page-chat')">👤</div>
-        </div>
-        <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">今日预约</div><div class="stat-value">24</div></div>
-            <div class="stat-card"><div class="stat-label">待确认</div><div class="stat-value" style="color: #ed7b2f;">5</div></div>
-            <div class="stat-card"><div class="stat-label">充值收入</div><div class="stat-value" style="color: #07c160; font-size: 20px;">¥3,280</div></div>
-            <div class="stat-card"><div class="stat-label">待消费负债</div><div class="stat-value" style="color: #d4af37; font-size: 20px;">¥12,560</div></div>
-        </div>
-        <div class="section">
-            <div class="section-title">新预约通知</div>
-            <div class="order-card">
-                <div class="order-row">
-                    <div class="order-name">Wang</div>
-                    <div class="order-status">待确认</div>
+    <!-- 商家端 -->
+    <div id="merchant-pages" style="display: none;">
+        <!-- 商家 Dashboard -->
+        <div id="page-merchant" class="page container">
+            <div class="merchant-header">
+                <div class="merchant-title">商家管理</div>
+                <div style="color: #fff; font-size: 14px;" onclick="switchPage('page-chat')">👤</div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-label">今日预约</div><div class="stat-value">24</div></div>
+                <div class="stat-card"><div class="stat-label">待确认</div><div class="stat-value" style="color: #ed7b2f;">5</div></div>
+                <div class="stat-card"><div class="stat-label">充值收入</div><div class="stat-value" style="color: #07c160; font-size: 20px;">¥3,280</div></div>
+                <div class="stat-card"><div class="stat-label">待消费负债</div><div class="stat-value" style="color: #d4af37; font-size: 20px;">¥12,560</div></div>
+            </div>
+            <div class="section">
+                <div class="section-title">新预约通知</div>
+                <div class="order-card">
+                    <div class="order-row">
+                        <div class="order-name">Wang</div>
+                        <div class="order-status">待确认</div>
+                    </div>
+                    <div class="order-info">📅 2024-04-06 18:30（晚餐）</div>
+                    <div class="order-info">👥 4 人 · 🍽️ 套餐 B x1</div>
+                    <div class="order-info">💰 已付定金 ¥50.00</div>
+                    <div class="order-actions">
+                        <button class="btn btn-default">拒绝</button>
+                        <button class="btn btn-primary" onclick="alert('✅ 已确认留位！')">确认留位</button>
+                    </div>
                 </div>
-                <div class="order-info">📅 2024-04-06 18:30（晚餐）</div>
-                <div class="order-info">👥 4 人 · 🍽️ 套餐 B x1</div>
-                <div class="order-info">💰 已付定金 ¥50.00</div>
-                <div class="order-actions">
-                    <button class="btn btn-default">拒绝</button>
-                    <button class="btn btn-primary" onclick="alert('✅ 已确认留位！')">确认留位</button>
-                </div>
+            </div>
+        </div>
+
+        <!-- 商家底部导航 -->
+        <div class="tabbar" id="merchant-tabbar" style="display: none;">
+            <div class="tab-item active">
+                <div class="tab-icon">📊</div>
+                <div class="tab-label">概览</div>
+            </div>
+            <div class="tab-item">
+                <div class="tab-icon">📋</div>
+                <div class="tab-label">预约</div>
+            </div>
+            <div class="tab-item">
+                <div class="tab-icon">🍽️</div>
+                <div class="tab-label">菜单</div>
+            </div>
+            <div class="tab-item">
+                <div class="tab-icon">🏆</div>
+                <div class="tab-label">VIP</div>
             </div>
         </div>
     </div>
@@ -112,7 +273,15 @@
         function switchPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
+            updateTabbar(pageId);
             window.scrollTo(0, 0);
+        }
+        function updateTabbar(pageId) {
+            const tabs = document.querySelectorAll('#user-tabbar .tab-item');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            if (pageId === 'page-chat') tabs[0].classList.add('active');
+            else if (pageId === 'page-orders') tabs[1].classList.add('active');
+            else if (pageId === 'page-profile' || pageId === 'page-vip') tabs[2].classList.add('active');
         }
         function sendMessage() {
             const input = document.getElementById('messageInput');
@@ -145,14 +314,25 @@
             return replies[message] || '好的，我明白了～';
         }
         function toggleRole() {
+            const userPages = document.getElementById('user-pages');
+            const merchantPages = document.getElementById('merchant-pages');
+            const userTabbar = document.getElementById('user-tabbar');
+            const merchantTabbar = document.getElementById('merchant-tabbar');
             const btn = document.querySelector('.role-switcher');
+            
             if (currentRole === 'user') {
                 currentRole = 'merchant';
                 btn.innerHTML = '👤 用户';
+                userPages.style.display = 'none';
+                merchantPages.style.display = 'block';
+                merchantTabbar.style.display = 'flex';
                 switchPage('page-merchant');
             } else {
                 currentRole = 'user';
                 btn.innerHTML = '🔄 切换';
+                userPages.style.display = 'block';
+                merchantPages.style.display = 'none';
+                merchantTabbar.style.display = 'none';
                 switchPage('page-chat');
             }
         }
